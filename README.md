@@ -4,7 +4,19 @@ App chạy trên máy với giao diện tiếng Việt. Tải tài liệu lên, 
 
 ## Chạy nhanh
 
-Cần Python 3.10 trở lên.
+Cần Python 3.10 trở lên; hỗ trợ **Python 3.14 bản tiêu chuẩn 64-bit**.
+
+**Windows / Python 3.14:** giải nén bản app mới vào thư mục riêng rồi nhấp đúp `run.bat`. File này ưu tiên `py -3.14`, cài các thư viện có sẵn gói nhị phân và tự mở trình duyệt khi app sẵn sàng. Nếu không có Python Launcher, app thử lệnh `python` trên PATH. Không cần cài Visual Studio Build Tools hoặc Rust.
+
+App tạo môi trường riêng theo phiên bản Python, ví dụ `.venv-3.14`, nên không dùng nhầm `.venv` của Python cũ. Lần đầu cần Internet để cài thư viện; các lần sau vẫn kiểm tra phụ thuộc. Giữ cửa sổ chạy app mở khi sử dụng. Nếu có lỗi, cửa sổ sẽ giữ lại thông báo để bạn xem.
+
+Nếu muốn chạy thủ công bằng Python 3.14 trên Windows:
+
+```bat
+py -3.14 launcher.py
+```
+
+Hoặc cài và chạy trực tiếp (không dùng trình khởi động):
 
 ```sh
 python -m venv .venv
@@ -17,6 +29,8 @@ python app.py
 ```
 
 Hoặc nhấp đúp `run.bat` trên Windows / chạy `sh run.sh` trên macOS, Linux để cài phụ thuộc và khởi động.
+
+Khi tự cài trực tiếp trên Python 3.14, hãy nâng cấp pip trước bằng `python -m pip install --upgrade pip`. Nếu dùng bản Python thử nghiệm, bản free-threaded (`3.14t`) hoặc Windows 32-bit, khả năng có gói nhị phân phụ thuộc từng thư viện; khuyến nghị bản Python 3.14 tiêu chuẩn 64-bit.
 
 Mở http://127.0.0.1:5000. Nhập API key trong mục **Tùy chọn dịch & API key**, hoặc cấu hình biến môi trường `OPENAI_API_KEY` trước khi chạy. Không đưa key lên GitHub. OpenAI API tính phí riêng theo tài khoản của bạn. Key nhập ở giao diện chỉ dùng cho yêu cầu đó; app không ghi key hay tài liệu vào file. Nội dung chữ cần dịch được gửi tới OpenAI. API có timeout và có thể tự thử lại khi lỗi mạng.
 
