@@ -32,7 +32,7 @@ Hoặc nhấp đúp `run.bat` trên Windows / chạy `sh run.sh` trên macOS, Li
 
 Khi tự cài trực tiếp trên Python 3.14, hãy nâng cấp pip trước bằng `python -m pip install --upgrade pip`. Nếu dùng bản Python thử nghiệm, bản free-threaded (`3.14t`) hoặc Windows 32-bit, khả năng có gói nhị phân phụ thuộc từng thư viện; khuyến nghị bản Python 3.14 tiêu chuẩn 64-bit.
 
-Mở http://127.0.0.1:5000. Nhập API key trong mục **Tùy chọn dịch & API key**, hoặc cấu hình biến môi trường `OPENAI_API_KEY` trước khi chạy. Không đưa key lên GitHub. OpenAI API tính phí riêng theo tài khoản của bạn. Key nhập ở giao diện chỉ dùng cho yêu cầu đó; app không ghi key hay tài liệu vào file. Nội dung chữ cần dịch được gửi tới OpenAI. API có timeout và có thể tự thử lại khi lỗi mạng.
+Mở http://127.0.0.1:5000. Nhập API key trong mục **Tùy chọn dịch & API key**, hoặc cấu hình biến môi trường `OPENAI_API_KEY` trước khi chạy. Không đưa key lên GitHub. OpenAI API tính phí riêng theo tài khoản của bạn. Key nhập ở giao diện được giữ trong ô của tab hiện tại để dùng lại; tải lại trang để xóa; app không ghi key hay tài liệu vào file. Nội dung chữ cần dịch được gửi tới OpenAI. API có timeout và có thể tự thử lại khi lỗi mạng.
 
 Chạy trên địa chỉ loopback mặc định; không đưa Flask development server này trực tiếp lên Internet. Một yêu cầu xử lý đồng bộ, tài liệu dài có thể mất nhiều phút. Tối đa 20 MB/file và 100 trang PDF. Hãy giữ trang mở trong lúc dịch.
 
@@ -54,3 +54,9 @@ python -m pytest -q
 ```
 
 Kiểm thử bằng dịch vụ giả lập: bảo toàn XML, công thức OMML/LaTeX, style và ảnh; field Word; BOM/xuống dòng; PDF có công thức; lỗi thiếu lớp chữ và tràn khung; validation và tải kết quả qua HTTP. Không cần API key khi chạy test. Các test này kiểm tra cơ chế xử lý file, không xác nhận chất lượng bản dịch của model hoặc bố cục trên mọi trình đọc PDF/Word.
+
+## Khi đã nhập key nhưng dịch không được
+
+App báo riêng lỗi xác thực (401), hết tín dụng/hạn mức API (429 insufficient_quota), giới hạn tốc độ (429 rate_limit), quyền truy cập (403), model không khả dụng (404), kết nối và quá thời gian chờ. Key không bị tự xóa sau mỗi lần thử; vẫn được che trong ô và không lưu vào localStorage, sessionStorage hoặc file. Tải lại trang để xóa key đã nhập. Không gửi API key cho người hỗ trợ.
+
+Với `insufficient_quota`, kiểm tra Billing và hạn mức dự án trên OpenAI Platform. Tạo key mới không tự bổ sung tín dụng; ChatGPT Plus/Pro có thanh toán riêng với API. Với `document_processing_error`, thử TXT ngắn để phân biệt lỗi xử lý PDF/Word. Các lỗi OpenAI trả về không được hiển thị nguyên văn, tránh lộ key hoặc nội dung tài liệu. Chưa có file kết quả nếu yêu cầu thất bại.

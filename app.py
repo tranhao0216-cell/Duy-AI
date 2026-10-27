@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 
 from translator.engine import OpenAITranslator, TranslationError, translate_docx, translate_txt
 from translator.pdf import translate_pdf
+from translator.errors import api_error_response
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 20 * 1024 * 1024
@@ -34,7 +35,9 @@ def translate():
         return jsonify(error='Chỉ hỗ trợ .docx, .pdf, .txt.'), 400
     key = request.form.get('api_key', '').strip() or os.environ.get('OPENAI_API_KEY', '')
     if not key:
-        return jsonify(error='Cần OpenAI API key để dịch. Key chỉ dùng cho yêu cầu hiện tại.'), 400
+        return jsonify(error_code='missing_api_key', error='Cần OpenAI API key để dịch. Mở Tùy chọn dịch & API key và dán key vào ô.'), 400
+    if any(ord(char) < 33 or ord(char) > 126 for char in key) or key.startswith(('"', "'")) or key.endswith(('"', "'")):
+        return jsonify(error_code='invalid_api_key_format', error='Key chứa ký tự không hợp lệ. Dán key đầy đủ, không kèm dấu nháy, khoảng trắng bên trong hoặc xuống dòng.'), 400
     model = request.form.get('model', 'gpt-4.1-mini')
     if model not in {'gpt-4.1-mini', 'gpt-4.1'}:
         return jsonify(error='Model không hợp lệ.'), 400
@@ -43,9 +46,10 @@ def translate():
         result, report = handlers[extension](file.read(), service)
     except TranslationError as exc:
         return jsonify(error=str(exc)), 422
-    except Exception:
+    except Exception as exc:
         # Never echo provider errors: they can contain document text or credentials.
-        return jsonify(error='Không dịch được. Kiểm tra API key, số dư, kết nối tới OpenAI và thử lại. Chưa có file kết quả.'), 502
+        payload, status = api_error_response(exc)
+        return jsonify(payload), status
     response = send_file(io.BytesIO(result), as_attachment=True,
                          download_name=name.rsplit('.', 1)[0] + '_vi.' + extension)
     response.headers['X-Translation-Report'] = json.dumps(report)

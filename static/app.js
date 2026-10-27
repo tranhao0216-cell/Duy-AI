@@ -6,6 +6,7 @@ const title = document.querySelector('#result-title');
 const statusText = document.querySelector('#status');
 const download = document.querySelector('#download');
 const report = document.querySelector('#report');
+const errorHelp = document.querySelector('#error-help');
 let url;
 function selected() {
   const file = fileInput.files[0];
@@ -21,7 +22,7 @@ zone.addEventListener('drop', e => {
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const button = document.querySelector('#submit');
-  result.hidden = false; download.hidden = true; report.textContent = '';
+  result.hidden = false; download.hidden = true; report.textContent = ''; errorHelp.hidden = true;
   title.textContent = 'Đang dịch tài liệu…';
   statusText.textContent = 'Vui lòng giữ trang mở. Tài liệu dài có thể mất vài phút.';
   const file = fileInput.files[0];
@@ -33,6 +34,20 @@ form.addEventListener('submit', async e => {
     const response = await fetch('/translate', {method: 'POST', body: new FormData(form), headers: {'X-App-Token': document.body.dataset.token}});
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
+      const code = error.error_code;
+      if (code) report.textContent = `Mã lỗi: ${code}`;
+      const helpLinks = {
+        insufficient_quota: ['https://platform.openai.com/settings/organization/billing/overview', 'Kiểm tra Billing của tài khoản API ↗'],
+        invalid_api_key: ['https://platform.openai.com/api-keys', 'Kiểm tra hoặc tạo lại API key ↗'],
+        rate_limit: ['https://platform.openai.com/settings/organization/limits', 'Kiểm tra giới hạn API ↗'],
+        api_service_error: ['https://status.openai.com/', 'Kiểm tra trạng thái dịch vụ ↗']
+      };
+      if (helpLinks[code]) {
+        [errorHelp.href, errorHelp.textContent] = helpLinks[code]; errorHelp.hidden = false;
+      }
+      if (['missing_api_key', 'invalid_api_key', 'invalid_api_key_format', 'model_unavailable', 'permission_denied'].includes(code)) {
+        document.querySelector('#api-options').open = true;
+      }
       throw new Error(error.error || 'Không nhận được kết quả. Hãy thử lại.');
     }
     const blob = await response.blob();
@@ -47,5 +62,5 @@ form.addEventListener('submit', async e => {
       : `Đã cập nhật ${summary.text_runs} đoạn chữ. Giữ nguyên ${summary.skipped_fields} đoạn chứa trường tự động và ${summary.protected_paragraphs || 0} đoạn có LaTeX bị chia nhỏ. Kiểm tra lại ngắt dòng và số trang.`;
   } catch (error) {
     title.textContent = 'Chưa thể hoàn tất'; statusText.textContent = error.message;
-  } finally {button.disabled = false; document.querySelector('#api-key').value = '';}
+  } finally {button.disabled = false;}
 });
